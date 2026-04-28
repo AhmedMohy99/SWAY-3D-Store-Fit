@@ -12,7 +12,6 @@ const Viewer = dynamic(() => import('./components/Viewer'), {
 export default function Home() {
   const [faceUrl, setFaceUrl] = useState(null);
   const [activeShirt, setActiveShirt] = useState('/maverick-phoenix-white.glb');
-  const [activePants, setActivePants] = useState('/pants1.glb');
   const fileInputRef = useRef(null);
 
   // دالة التعامل مع رفع صورتك
