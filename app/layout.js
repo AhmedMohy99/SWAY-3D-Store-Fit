@@ -1,12 +1,14 @@
+import './globals.css'; // السطر ده هو اللي بيرجع الستايل بتاعنا!
+
 export const metadata = {
-  title: "SWAY 3D Virtual Fitting Room",
-  description: "Try on clothes virtually with 3D preview and smart size recommendations",
+  title: 'Sway 3D Fitting Room',
+  description: 'Technical Streetwear',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#fafafa" }}>
+      <body className="bg-black text-white m-0 p-0 overflow-hidden">
         {children}
       </body>
     </html>
