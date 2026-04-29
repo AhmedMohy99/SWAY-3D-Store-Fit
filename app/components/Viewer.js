@@ -43,7 +43,6 @@ function Avatar({ height, weight, faceUrl }) {
 function ClothingItem({ activeShirt, shirtSize, fitType }) {
   const { scene } = useGLTF(activeShirt); 
 
-  // حدثنا المقاسات عشان تشمل الـ 2XL
   const sizeScales = {
     "S": 1.0,
     "M": 1.05,
@@ -57,9 +56,18 @@ function ClothingItem({ activeShirt, shirtSize, fitType }) {
   if (fitType === 'OVERSIZED') newScale += 0.05;
   if (fitType === 'BOXY') newScale += 0.02;
 
+  // ارتفاع التيشيرت عشان يلبس في الصدر بالظبط
+  const SHIRT_HEIGHT_FIX = 1.45; 
+  
   const yOffset = newScale > 1.0 ? -((newScale - 1.0) * 0.1) : 0;
 
-  return <primitive object={scene} position={[0, -1 + yOffset, 0]} scale={[newScale, newScale, newScale]} />;
+  return (
+    <primitive 
+      object={scene} 
+      position={[0, -1 + SHIRT_HEIGHT_FIX + yOffset, 0]} 
+      scale={[newScale, newScale, newScale]} 
+    />
+  );
 }
 
 export default function Viewer({ height, weight, shirtSize, fitType, activeShirt, faceUrl }) {
@@ -76,7 +84,6 @@ export default function Viewer({ height, weight, shirtSize, fitType, activeShirt
 
       <ContactShadows position={[0, -1, 0]} opacity={0.6} scale={10} blur={2} far={4} color="#00FFFF" />
       
-      {/* خلينا الكاميرا تركز على المانيكان مع إزاحة بسيطة عشان الـ Sidebar اللي على الشمال مياكلش حتة منه */}
       <OrbitControls 
         enablePan={false} 
         minDistance={1.5} 
