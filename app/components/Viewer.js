@@ -4,11 +4,9 @@ import { OrbitControls, useGLTF, Environment, ContactShadows } from '@react-thre
 import { Suspense, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 
-// 1. المانيكان (حجم الجسم + تركيب الوجه)
 function Avatar({ height, weight, faceUrl }) {
   const { scene } = useGLTF('/avatar.glb'); 
 
-  // حساب الأبعاد بناءً على الطول والوزن
   const currentScale = useMemo(() => {
     const BASE_HEIGHT = 162; 
     const BASE_WEIGHT = 55;  
@@ -19,7 +17,6 @@ function Avatar({ height, weight, faceUrl }) {
     return [scaleXZ, scaleY, scaleXZ];
   }, [height, weight]);
 
-  // تركيب صورة الوجه على المانيكان
   useEffect(() => {
     if (faceUrl) {
       const textureLoader = new THREE.TextureLoader();
@@ -43,24 +40,22 @@ function Avatar({ height, weight, faceUrl }) {
   return <primitive object={scene} position={[0, -1, 0]} scale={currentScale} />;
 }
 
-// 2. التيشيرت (حسب الملف المختار، المقاس، ونوع التلبيس)
 function ClothingItem({ activeShirt, shirtSize, fitType }) {
-  // بنحمل الملف اللي العميل اختاره (حالياً المافيريك شغال)
-  // ملحوظة: لو اختار ملف مش موجود الموقع هيجيب إيرور 404 لحد ما ترفع باقي الملفات
   const { scene } = useGLTF(activeShirt); 
 
+  // حدثنا المقاسات عشان تشمل الـ 2XL
   const sizeScales = {
-    "1 (S)": 1.0,
-    "2 (M)": 1.05,
-    "3 (L)": 1.10,
-    "4 (XL)": 1.15
+    "S": 1.0,
+    "M": 1.05,
+    "L": 1.10,
+    "XL": 1.15,
+    "2XL": 1.20
   };
 
   let newScale = sizeScales[shirtSize] || 1.0;
 
-  // تعديل إضافي للـ Scale بناءً على الـ Fit Type
-  if (fitType === 'Oversized') newScale += 0.05;
-  if (fitType === 'Boxy') newScale += 0.02; // البوكسي أعرض بس مش أطول، بس هنمشيها scale مؤقتاً
+  if (fitType === 'OVERSIZED') newScale += 0.05;
+  if (fitType === 'BOXY') newScale += 0.02;
 
   const yOffset = newScale > 1.0 ? -((newScale - 1.0) * 0.1) : 0;
 
@@ -69,30 +64,28 @@ function ClothingItem({ activeShirt, shirtSize, fitType }) {
 
 export default function Viewer({ height, weight, shirtSize, fitType, activeShirt, faceUrl }) {
   return (
-    <Canvas camera={{ position: [0, 1, 3], fov: 45 }}>
+    <Canvas camera={{ position: [2, 1, 4], fov: 45 }}>
       <Environment preset="city" />
       <ambientLight intensity={0.5} />
       <directionalLight position={[2, 5, 2]} intensity={1} castShadow />
 
       <Suspense fallback={null}>
         <Avatar height={height} weight={weight} faceUrl={faceUrl} />
-        
-        {/* بنستدعي التيشيرت هنا */}
         <ClothingItem activeShirt={activeShirt} shirtSize={shirtSize} fitType={fitType} />
       </Suspense>
 
       <ContactShadows position={[0, -1, 0]} opacity={0.6} scale={10} blur={2} far={4} color="#00FFFF" />
       
+      {/* خلينا الكاميرا تركز على المانيكان مع إزاحة بسيطة عشان الـ Sidebar اللي على الشمال مياكلش حتة منه */}
       <OrbitControls 
         enablePan={false} 
         minDistance={1.5} 
-        maxDistance={4} 
-        target={[0, 0.5, 0]} 
+        maxDistance={5} 
+        target={[0.5, 0.5, 0]} 
       />
     </Canvas>
   );
 }
 
-// التحميل المسبق للملفات اللي موجودة عندك فعلاً
 useGLTF.preload('/avatar.glb');
 useGLTF.preload('/maverick-phoenix-white.glb');
