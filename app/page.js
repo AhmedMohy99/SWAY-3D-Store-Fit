@@ -7,13 +7,11 @@ const Viewer = dynamic(() => import('./components/Viewer'), {
   loading: () => <div className="flex h-screen w-screen items-center justify-center text-[#00FFFF] bg-black uppercase tracking-widest text-sm animate-pulse">Loading SWAY Engine...</div>
 });
 
-// الداتا اللي إنت بعتها
 const SIZES = ['S', 'M', 'L', 'XL', '2XL'];
 const CONTACT_LINKS = {
   whatsapp: 'https://api.whatsapp.com/send?phone=201033866838',
 };
 
-// جهزنا كل المنتجات وحولنا مسار الصور لمسار 3D (.glb)
 const productsList = [
   { id: '/maverick-phoenix-white.glb', name: 'MAVERICK PHOENIX (WHITE)' },
   { id: '/maverick-phoenix-black.glb', name: 'MAVERICK PHOENIX (BLACK)' },
@@ -50,7 +48,6 @@ export default function Home() {
   return (
     <main className="relative w-screen h-screen bg-black overflow-hidden font-sans">
       
-      {/* طبقة الـ 3D (واخدة الشاشة كلها) */}
       <div className="absolute inset-0 z-0">
         <Viewer 
           height={height} 
@@ -62,15 +59,12 @@ export default function Home() {
         />
       </div>
 
-      {/* زرار السلة في اليمين فوق */}
       <div className="absolute top-8 right-8 z-20 pointer-events-auto">
         <button className="text-white text-[10px] tracking-widest uppercase hover:text-[#00FFFF] transition-colors">CART (0)</button>
       </div>
 
-      {/* القائمة الجانبية (Sidebar) زي التصميم بالظبط */}
       <div className="absolute left-0 top-0 bottom-0 w-[380px] bg-black/90 backdrop-blur-md border-r border-white/5 p-8 flex flex-col z-10 overflow-y-auto pointer-events-auto custom-scrollbar">
         
-        {/* اللوجو */}
         <div className="mb-10">
           <h1 className="text-white font-bold tracking-[0.3em] text-2xl uppercase">SWAY MAVERICK</h1>
           <p className="text-[#00FFFF] text-[8px] tracking-[0.2em] uppercase mt-1">TECHNICAL STREETWEAR</p>
@@ -78,7 +72,6 @@ export default function Home() {
 
         <div className="flex flex-col gap-8 flex-1">
           
-          {/* 1. Face Mapping */}
           <div>
             <div className="flex justify-between items-end mb-3">
               <label className="text-[#00FFFF] text-[10px] tracking-widest uppercase">FACE MAPPING</label>
@@ -93,7 +86,6 @@ export default function Home() {
             </button>
           </div>
 
-          {/* 2. Select Item */}
           <div>
             <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">SELECT ITEM</label>
             <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
@@ -113,7 +105,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 3. Fit Type */}
           <div>
             <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">FIT TYPE</label>
             <div className="flex gap-2">
@@ -133,7 +124,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 4. Size */}
           <div>
             <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">SIZE</label>
             <div className="flex gap-2">
@@ -153,7 +143,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 5. Height & Weight */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-gray-500 text-[9px] tracking-widest uppercase mb-2">HEIGHT (CM)</label>
@@ -173,7 +162,6 @@ export default function Home() {
 
         </div>
 
-        {/* السوشيال ميديا والواتساب */}
         <footer className="mt-8 pt-6 border-t border-white/10 flex gap-6 text-gray-500 text-[8px] tracking-[0.2em] uppercase">
           <a href="#" className="hover:text-[#00FFFF] transition-colors">INSTAGRAM</a>
           <a href="#" className="hover:text-[#00FFFF] transition-colors">TIKTOK</a>
