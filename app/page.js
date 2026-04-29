@@ -10,13 +10,13 @@ const Viewer = dynamic(() => import('./components/Viewer'), {
 export default function Home() {
   const [height, setHeight] = useState(175); 
   const [weight, setWeight] = useState(70);  
+  const [shirtSize, setShirtSize] = useState('1 (S)'); // المقاس الافتراضي للتيشيرت
 
   return (
     <main className="relative w-screen h-screen bg-black overflow-hidden font-sans">
       
       <div className="absolute inset-0 z-0">
-        {/* بنبعت الأرقام اللي العميل بيكتبها للمانيكان */}
-        <Viewer height={height} weight={weight} />
+        <Viewer height={height} weight={weight} shirtSize={shirtSize} />
       </div>
 
       <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 sm:p-10">
@@ -28,30 +28,47 @@ export default function Home() {
           
           <div className="text-center mb-2">
             <p className="text-white text-xs tracking-[0.2em] uppercase">Virtual Fitting</p>
-            <p className="text-gray-500 text-[9px] tracking-widest uppercase mt-1">Enter your exact metrics</p>
           </div>
 
-          {/* مربع إدخال الطول */}
+          {/* مقاسات التيشيرت */}
           <div>
-            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-2">Height (CM)</label>
+            <p className="text-[#00FFFF] text-[10px] tracking-widest uppercase mb-2">Shirt Fit (Oversized Logic)</p>
+            <div className="flex gap-2">
+              {['1 (S)', '2 (M)', '3 (L)', '4 (XL)'].map((size) => (
+                <button 
+                  key={size}
+                  onClick={() => setShirtSize(size)}
+                  className={`flex-1 h-10 text-xs border uppercase tracking-widest transition-all ${
+                    shirtSize === size 
+                    ? 'bg-[#00FFFF] text-black border-[#00FFFF] font-bold' 
+                    : 'text-white border-white/30 hover:border-white'
+                  }`}
+                >
+                  {size.split(' ')[1]} {/* عشان يعرض S, M, L, XL بس على الزرار */}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* إدخال الطول */}
+          <div>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-2">Your Height (CM)</label>
             <input 
               type="number" 
               value={height}
               onChange={(e) => setHeight(Number(e.target.value))}
-              className="w-full h-12 bg-black/50 border border-white/20 focus:border-[#00FFFF] text-white text-center text-lg tracking-widest outline-none transition-all duration-300 placeholder:text-gray-700"
-              placeholder="175"
+              className="w-full h-10 bg-black/50 border border-white/20 focus:border-[#00FFFF] text-white text-center text-sm tracking-widest outline-none transition-all duration-300"
             />
           </div>
 
-          {/* مربع إدخال الوزن */}
+          {/* إدخال الوزن */}
           <div>
-            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-2">Weight (KG)</label>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-2">Your Weight (KG)</label>
             <input 
               type="number" 
               value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
-              className="w-full h-12 bg-black/50 border border-white/20 focus:border-[#00FFFF] text-white text-center text-lg tracking-widest outline-none transition-all duration-300 placeholder:text-gray-700"
-              placeholder="70"
+              className="w-full h-10 bg-black/50 border border-white/20 focus:border-[#00FFFF] text-white text-center text-sm tracking-widest outline-none transition-all duration-300"
             />
           </div>
 
