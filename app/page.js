@@ -28,8 +28,8 @@ const productsList = [
 ];
 
 export default function Home() {
-  const [height, setHeight] = useState(175); 
-  const [weight, setWeight] = useState(70);  
+  const [height, setHeight] = useState(162); 
+  const [weight, setWeight] = useState(55);  
   const [shirtSize, setShirtSize] = useState('M'); 
   const [fitType, setFitType] = useState('OVERSIZED');
   const [activeShirt, setActiveShirt] = useState('/maverick-phoenix-white.glb');
