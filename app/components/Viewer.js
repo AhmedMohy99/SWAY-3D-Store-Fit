@@ -5,10 +5,17 @@ import { Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 
 function Avatar({ faceUrl }) {
-  // الكود بيفترض إن ملف avatar.glb لسه موجود عندك في public
+  // هنا بنحمل المانيكان بس بمسار صريح وثابت عشان ميضربش
   const { scene } = useGLTF('/avatar.glb'); 
 
   useEffect(() => {
+    // طباعة أسماء أجزاء الجسم في الكونسول
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        console.log("🔍 Part found:", child.name);
+      }
+    });
+
     if (faceUrl) {
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load(faceUrl, (texture) => {
@@ -16,8 +23,11 @@ function Avatar({ faceUrl }) {
         texture.colorSpace = THREE.SRGBColorSpace;
         
         scene.traverse((child) => {
-          if (child.isMesh && (child.name.includes('Head') || child.name.includes('Face'))) {
-            child.material.map = texture;
+          if (child.isMesh && (child.name.toLowerCase().includes('head') || child.name.toLowerCase().includes('face'))) {
+            child.material = new THREE.MeshStandardMaterial({
+              map: texture,
+              roughness: 0.5,
+            });
             child.material.needsUpdate = true;
           }
         });
@@ -25,38 +35,30 @@ function Avatar({ faceUrl }) {
     }
   }, [faceUrl, scene]);
 
-  return <primitive object={scene} />;
+  return <primitive object={scene} position={[0, -1, 0]} scale={[1.2, 1.2, 1.2]} />;
 }
 
-function ClothingItem({ url }) {
-  const { scene } = useGLTF(url);
-  return <primitive object={scene} />;
-}
-
-export default function Viewer({ faceUrl, activeShirt }) {
+export default function Viewer({ faceUrl }) {
   return (
-    <Canvas camera={{ position: [0, 1.5, 4], fov: 45 }}>
+    <Canvas camera={{ position: [0, 1, 3], fov: 45 }}>
       <Environment preset="city" />
       <ambientLight intensity={0.5} />
       <directionalLight position={[2, 5, 2]} intensity={1} castShadow />
 
       <Suspense fallback={null}>
         <Avatar faceUrl={faceUrl} />
-        <ClothingItem url={activeShirt} />
       </Suspense>
 
-      <ContactShadows position={[0, -1, 0]} opacity={0.5} scale={10} blur={2} far={4} />
+      <ContactShadows position={[0, -1, 0]} opacity={0.6} scale={10} blur={2} far={4} color="#00FFFF" />
       
       <OrbitControls 
         enablePan={false} 
-        minDistance={2} 
-        maxDistance={6} 
-        target={[0, 1, 0]} 
+        minDistance={1.5} 
+        maxDistance={4} 
+        target={[0, 0.5, 0]} 
       />
     </Canvas>
   );
 }
 
-// التحميل المسبق للملفات الحقيقية بس
 useGLTF.preload('/avatar.glb');
-useGLTF.preload('/maverick-phoenix-white.glb');
