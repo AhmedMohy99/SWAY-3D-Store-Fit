@@ -1,306 +1,291 @@
-# 🚀 SWAY 3D Virtual Fitting Room
+'use client';
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import FaceUploader from './components/FaceUploader';
 
-A complete MVP web application featuring an interactive 3D virtual fitting prototype with smart size recommendations based on body measurements.
+const Viewer = dynamic(() => import('./components/Viewer'), { 
+  ssr: false,
+  loading: () => (
+    <div className="flex h-screen w-screen items-center justify-center bg-black">
+      <div className="text-center">
+        <div className="text-[#00FFFF] uppercase tracking-[0.3em] text-sm animate-pulse mb-4">
+          Loading SWAY Engine
+        </div>
+        <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-full bg-[#00FFFF] animate-[loading_2s_ease-in-out_infinite]" 
+               style={{
+                 animation: 'loading 2s ease-in-out infinite',
+               }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+});
 
-## ✨ What's Implemented
-
-✅ **Complete Project Structure**
-- Next.js 14 App Router architecture
-- Clean separation: `/lib` for logic, `/app/components` for UI
-
-✅ **Smart Size Recommendation Engine**
-- Body width estimation algorithm: `(weight / height) * 100 + 40`
-- Dual size chart system (oversized vs regular fit)
-- Intelligent matching based on user measurements
-
-✅ **Product Management**
-- Two sample products (Maverick Phoenix - oversized, Bluish Splash - regular)
-- Product metadata (name, type, price, description, colors)
-- Easy to extend with more products
-
-✅ **3D Viewer**
-- Interactive 3D shirt preview using Three.js
-- Rotatable with OrbitControls (360° rotation)
-- Texture mapping support
-- Responsive canvas rendering
-
-✅ **User Input & Validation**
-- Height (cm) and Weight (kg) inputs
-- Comprehensive validation (non-empty, numeric, range checks)
-- Error messaging for invalid inputs
-
-✅ **Smart Recommendation Display**
-- Personalized size recommendation
-- Garment measurements (width & length)
-- Estimated body width calculation
-- Helpful sizing tips
-
-✅ **Size Guide Tables**
-- Complete oversized fit chart (S, M, L, XL)
-- Complete regular fit chart (S, M, L, XL, XXL)
-- Clear measurement display
-
-✅ **Product Switcher**
-- Toggle between different products
-- Dynamic 3D model and size chart updates
-- Reset recommendations on product change
-
-## 🛠️ Tech Stack
-
-- **Frontend Framework:** Next.js 14 (App Router)
-- **UI Library:** React 18
-- **3D Engine:** Three.js
-- **3D React Integration:** @react-three/fiber + @react-three/drei
-- **Language:** JavaScript (ES6+)
-
-## 📦 Installation & Setup
-
-### Step 1: Install Dependencies
-
-```bash
-cd sway-fitting-room
-npm install
-```
-
-### Step 2: Run Development Server
-
-```bash
-npm run dev
-```
-
-### Step 3: Open in Browser
-
-Navigate to: `http://localhost:3000`
-
-## 📁 Project Structure
-
-```
-sway-fitting-room/
-├── app/
-│   ├── components/
-│   │   ├── Viewer.js          # 3D shirt viewer with Three.js
-│   │   ├── SizeForm.js        # User input form with validation
-│   │   └── Recommendation.js  # Smart recommendation display
-│   ├── page.js                # Main application page
-│   └── layout.js              # Root layout with metadata
-├── lib/
-│   ├── sizeCharts.js          # Size measurement data
-│   ├── sizeEngine.js          # Recommendation algorithm
-│   └── products.js            # Product catalog
-├── public/
-│   └── textures/
-│       └── shirt.png          # Product texture placeholder
-├── package.json
-└── README.md
-```
-
-## 🎯 How It Works
-
-### 1. Size Recommendation Algorithm
-
-The system uses a body width estimation formula:
-
-```javascript
-bodyWidth = (weight / height) * 100 + 40
-```
-
-Then matches against the appropriate size chart (oversized or regular) to find the best fit.
-
-### 2. Size Charts
-
-**Oversized Fit** (Maverick Phoenix, etc.)
-- S: 54cm width × 72.5cm length
-- M: 57cm width × 73.5cm length
-- L: 60cm width × 74.5cm length
-- XL: 63cm width × 76.5cm length
-
-**Regular Fit** (Bluish Splash, etc.)
-- S: 52cm width × 68cm length
-- M: 54cm width × 70cm length
-- L: 56cm width × 72cm length
-- XL: 58cm width × 74cm length
-- XXL: 60cm width × 76cm length
-
-### 3. User Flow
-
-1. User selects a product (Maverick Phoenix or Bluish Splash)
-2. User enters height (cm) and weight (kg)
-3. System validates input
-4. Algorithm calculates recommended size
-5. Display shows personalized recommendation with measurements
-
-## 🎨 Customization Guide
-
-### Adding New Products
-
-Edit `lib/products.js`:
-
-```javascript
-export const PRODUCTS = [
-  // ... existing products
-  {
-    id: 3,
-    name: "Your Product Name",
-    type: "oversized", // or "regular"
-    texture: "/textures/your-image.png",
-    price: "XXX.XX EGP",
-    description: "Your product description",
-    colors: ["Color 1", "Color 2"],
-  },
-];
-```
-
-### Replacing Texture Placeholder
-
-1. Add your product image to `public/textures/`
-2. Update the `texture` path in `lib/products.js`
-3. Supported formats: PNG, JPG, SVG
-
-### Adjusting Size Charts
-
-Edit `lib/sizeCharts.js` to modify measurements:
-
-```javascript
-export const SIZE_CHARTS = {
-  oversized: [
-    { size: "S", width: 54, length: 72.5 },
-    // ... add or modify sizes
-  ],
-  regular: [
-    // ... your regular fit measurements
-  ],
+const SIZES = ['S', 'M', 'L', 'XL', '2XL'];
+const CONTACT_LINKS = {
+  whatsapp: 'https://api.whatsapp.com/send?phone=201033866838',
+  instagram: 'https://instagram.com/sway.maverick',
+  tiktok: 'https://tiktok.com/@sway.maverick',
 };
-```
 
-## 🚀 Next Upgrades
+const productsList = [
+  { id: '/maverick-phoenix-white.glb', name: 'MAVERICK PHOENIX (WHITE)', price: '730 EGP' },
+  { id: '/maverick-phoenix-black.glb', name: 'MAVERICK PHOENIX (BLACK)', price: '730 EGP' },
+  { id: '/powder-blue-venture-tee.glb', name: 'POWDER BLUE VENTURE TEE', price: '650 EGP' },
+  { id: '/catalyst-tee.glb', name: 'THE CATALYST TEE', price: '680 EGP' },
+  { id: '/bluish-splash.glb', name: 'BLUISH SPLASH', price: '650 EGP' },
+  { id: '/yellowish-splash.glb', name: 'YELLOWISH SPLASH', price: '650 EGP' },
+  { id: '/greenish-splash.glb', name: 'GREENISH SPLASH', price: '650 EGP' },
+  { id: '/cyber-crescent.glb', name: 'CYBER CRESCENT', price: '720 EGP' },
+  { id: '/eternity-protocol-white.glb', name: 'ETERNITY PROTOCOL (WHITE)', price: '750 EGP' },
+  { id: '/eternity-protocol-navy.glb', name: 'ETERNITY PROTOCOL (NAVY)', price: '750 EGP' },
+  { id: '/black-flux-sweatpants.glb', name: 'BLACK FLUX SWEATPANTS', price: '850 EGP' },
+  { id: '/light-code-sweatpants.glb', name: 'LIGHT CODE SWEATPANTS', price: '850 EGP' }
+];
 
-### Planned Features
+export default function Home() {
+  const [height, setHeight] = useState(162); 
+  const [weight, setWeight] = useState(55);  
+  const [shirtSize, setShirtSize] = useState('M'); 
+  const [fitType, setFitType] = useState('OVERSIZED');
+  const [activeShirt, setActiveShirt] = useState('/maverick-phoenix-white.glb');
+  const [faceUrl, setFaceUrl] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
 
-1. **Advanced 3D Models**
-   - Import GLB/GLTF mannequin models via `useGLTF`
-   - Realistic clothing draping and physics
-   - Multiple camera angles and zoom
+  const activeProduct = productsList.find(p => p.id === activeShirt);
 
-2. **Enhanced Product Catalog**
-   - Product category filtering
-   - Search functionality
-   - Favorite/save products
+  const handleAddToCart = () => {
+    setCartCount(prev => prev + 1);
+    // Add haptic feedback for better UX
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
 
-3. **Fit Customization**
-   - Fit-based 3D scale adjustments
-   - Visual comparison between sizes
-   - Virtual "try before you buy"
+  return (
+    <main className="relative w-screen h-screen bg-black overflow-hidden font-sans">
+      
+      {/* 3D Viewer Background */}
+      <div className="absolute inset-0 z-0">
+        <Viewer 
+          height={height} 
+          weight={weight} 
+          shirtSize={shirtSize} 
+          fitType={fitType} 
+          activeShirt={activeShirt}
+          faceUrl={faceUrl}
+        />
+      </div>
 
-4. **Face Mapping (Optional)**
-   - Upload user photo
-   - TensorFlow.js face detection
-   - Apply to 3D mannequin head
+      {/* Top Navigation */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center px-8 py-6 pointer-events-auto">
+        <div className="flex items-center gap-8">
+          <button className="text-white/60 text-[9px] tracking-widest uppercase hover:text-[#00FFFF] transition-colors">
+            HOME
+          </button>
+          <button className="text-white/60 text-[9px] tracking-widest uppercase hover:text-[#00FFFF] transition-colors">
+            COLLECTION
+          </button>
+          <button className="text-white/60 text-[9px] tracking-widest uppercase hover:text-[#00FFFF] transition-colors">
+            ABOUT
+          </button>
+        </div>
+        
+        <button 
+          onClick={handleAddToCart}
+          className="text-white text-[10px] tracking-widest uppercase hover:text-[#00FFFF] transition-colors relative"
+        >
+          CART ({cartCount})
+          {cartCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#00FFFF] rounded-full animate-ping" />
+          )}
+        </button>
+      </div>
 
-5. **Data Persistence**
-   - Supabase integration
-   - Save user profiles
-   - Order history tracking
-   - Session management
+      {/* Left Sidebar */}
+      <div className="absolute left-0 top-0 bottom-0 w-[380px] bg-black/90 backdrop-blur-md border-r border-white/5 p-8 flex flex-col z-10 overflow-y-auto pointer-events-auto custom-scrollbar">
+        
+        {/* Brand Header */}
+        <div className="mb-10">
+          <h1 className="text-white font-bold tracking-[0.3em] text-2xl uppercase">SWAY MAVERICK</h1>
+          <p className="text-[#00FFFF] text-[8px] tracking-[0.2em] uppercase mt-1">TECHNICAL STREETWEAR</p>
+        </div>
 
-6. **Advanced Sizing**
-   - Chest, waist, shoulder measurements
-   - Body type recommendations
-   - Size comparison across brands
+        <div className="flex flex-col gap-8 flex-1">
+          
+          {/* Face Upload */}
+          <FaceUploader onFaceUpload={setFaceUrl} faceUrl={faceUrl} />
 
-7. **E-commerce Integration**
-   - Shopping cart
-   - Checkout flow
-   - Payment processing
-   - Order management
+          {/* Product Selector */}
+          <div>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">
+              Select Item
+            </label>
+            <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+              {productsList.map((product) => (
+                <button 
+                  key={product.id}
+                  onClick={() => setActiveShirt(product.id)}
+                  className={`w-full px-4 py-3 text-[9px] border uppercase tracking-[0.1em] transition-all flex items-center justify-between group ${
+                    activeShirt === product.id 
+                    ? 'bg-white text-black border-white font-bold' 
+                    : 'text-gray-400 border-white/10 hover:border-[#00FFFF]/50 hover:text-white'
+                  }`}
+                >
+                  <span>{product.name}</span>
+                  <span className={`text-[8px] ${activeShirt === product.id ? 'text-black' : 'text-[#00FFFF]/70'}`}>
+                    {product.price}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-8. **Mobile Optimization**
-   - Touch controls for 3D viewer
-   - Responsive design improvements
-   - Progressive Web App (PWA)
+          {/* Fit Type */}
+          <div>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">
+              Fit Type
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {['STANDARD', 'OVERSIZED', 'BOXY'].map((fit) => (
+                <button 
+                  key={fit}
+                  onClick={() => setFitType(fit)}
+                  className={`h-10 text-[9px] border uppercase tracking-widest transition-all ${
+                    fitType === fit 
+                    ? 'bg-[#00FFFF] text-black border-[#00FFFF] font-bold scale-105' 
+                    : 'text-gray-500 border-white/10 hover:border-white/30 hover:text-white'
+                  }`}
+                >
+                  {fit}
+                </button>
+              ))}
+            </div>
+          </div>
 
-## 🧪 Testing the App
+          {/* Size Selector */}
+          <div>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">
+              Size
+            </label>
+            <div className="grid grid-cols-5 gap-2">
+              {SIZES.map((size) => (
+                <button 
+                  key={size}
+                  onClick={() => setShirtSize(size)}
+                  className={`h-12 text-[11px] border uppercase tracking-widest transition-all font-bold ${
+                    shirtSize === size 
+                    ? 'bg-[#00FFFF] text-black border-[#00FFFF] scale-110' 
+                    : 'text-gray-400 border-white/10 hover:border-[#00FFFF]/50 hover:text-white'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
 
-### Test Case 1: Oversized Fit (Maverick Phoenix)
-- Select: Maverick Phoenix
-- Input: Height 162 cm, Weight 55 kg
-- Expected: Size S (54cm × 72.5cm)
+          {/* Body Measurements */}
+          <div>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">
+              Your Measurements
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-500 text-[9px] tracking-widest uppercase mb-2">
+                  Height (CM)
+                </label>
+                <input 
+                  type="number" 
+                  value={height} 
+                  onChange={(e) => setHeight(Number(e.target.value))}
+                  min="100"
+                  max="250"
+                  className="w-full h-12 bg-transparent border border-white/10 focus:border-[#00FFFF] text-white text-center text-sm outline-none transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 text-[9px] tracking-widest uppercase mb-2">
+                  Weight (KG)
+                </label>
+                <input 
+                  type="number" 
+                  value={weight} 
+                  onChange={(e) => setWeight(Number(e.target.value))}
+                  min="30"
+                  max="200"
+                  className="w-full h-12 bg-transparent border border-white/10 focus:border-[#00FFFF] text-white text-center text-sm outline-none transition-colors"
+                />
+              </div>
+            </div>
+          </div>
 
-### Test Case 2: Regular Fit (Bluish Splash)
-- Select: Bluish Splash
-- Input: Height 175 cm, Weight 70 kg
-- Expected: Size M or L
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            className="w-full h-14 bg-[#00FFFF] text-black text-[11px] uppercase tracking-[0.3em] font-bold hover:bg-white transition-all transform hover:scale-105 active:scale-95"
+          >
+            Add to Cart • {activeProduct?.price}
+          </button>
 
-### Test Case 3: Validation
-- Try empty inputs → Error message
-- Try negative numbers → Error message
-- Try extreme values → Range validation error
+        </div>
 
-## 📝 Code Quality Features
+        {/* Footer Links */}
+        <footer className="mt-8 pt-6 border-t border-white/10">
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <a 
+              href={CONTACT_LINKS.instagram} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="text-center py-2 border border-white/10 text-gray-500 text-[8px] tracking-[0.2em] uppercase hover:text-[#00FFFF] hover:border-[#00FFFF]/30 transition-all"
+            >
+              Instagram
+            </a>
+            <a 
+              href={CONTACT_LINKS.tiktok} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="text-center py-2 border border-white/10 text-gray-500 text-[8px] tracking-[0.2em] uppercase hover:text-[#00FFFF] hover:border-[#00FFFF]/30 transition-all"
+            >
+              TikTok
+            </a>
+          </div>
+          <a 
+            href={CONTACT_LINKS.whatsapp} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="block w-full text-center py-3 bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] text-[9px] tracking-[0.2em] uppercase hover:bg-[#25D366]/20 transition-all"
+          >
+            Contact on WhatsApp
+          </a>
+        </footer>
 
-✅ Clean component boundaries
-✅ Logic separation (UI vs business logic)
-✅ Input validation (non-empty, numeric, positive, range checks)
-✅ Inline styling for rapid prototyping
-✅ No TypeScript (as requested)
-✅ Production-ready, no placeholder code
-✅ Fully runnable without build errors
+      </div>
 
-## 🆘 Troubleshooting
+      {/* Bottom Controls */}
+      <div className="absolute bottom-8 right-8 z-20 pointer-events-auto">
+        <div className="flex flex-col gap-3">
+          <button className="w-12 h-12 bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-[#00FFFF] hover:border-[#00FFFF]/50 transition-all">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+            </svg>
+          </button>
+          <button className="w-12 h-12 bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/60 hover:text-[#00FFFF] hover:border-[#00FFFF]/50 transition-all">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
-### Issue: 3D Viewer not showing
-
-**Solution:** 
-- Ensure all Three.js dependencies are installed
-- Check browser console for errors
-- Verify texture path is correct
-
-### Issue: Size recommendation not appearing
-
-**Solution:**
-- Check that height/weight are valid numbers
-- Verify the product has a valid `type` field
-- Ensure size charts contain the product type
-
-### Issue: Module not found errors
-
-**Solution:**
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-## 🌐 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Deploy with default Next.js settings
-
-### Deploy to Netlify
-
-1. Build command: `npm run build`
-2. Publish directory: `.next`
-3. Use Next.js runtime
-
-## 📄 License
-
-This project is built as an MVP for SWAY. All rights reserved.
-
-## 👨‍💻 Developer Notes
-
-- Built with Next.js App Router (not Pages Router)
-- Uses client components for interactivity
-- Three.js rendering happens client-side
-- No server-side rendering for 3D content
-- Texture loading is async (handled by @react-three/drei)
-
-## 🎉 Ready to Launch!
-
-Your SWAY 3D Virtual Fitting Room is production-ready. Just add your product textures and you're good to go!
-
-For questions or support, refer to the inline code comments or Next.js documentation.
-
----
-
-**Built with ❤️ for the future of online shopping**
+      <style jsx>{`
+        @keyframes loading {
+          0%, 100% { width: 0%; }
+          50% { width: 100%; }
+        }
+      `}</style>
+    </main>
+  );
+}
