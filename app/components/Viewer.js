@@ -40,8 +40,15 @@ function Avatar({ height, weight, faceUrl }) {
   return <primitive object={scene} position={[0, -1, 0]} scale={currentScale} />;
 }
 
-function ClothingItem({ activeShirt, shirtSize, fitType }) {
+function ClothingItem({ activeShirt, shirtSize, fitType, height, weight }) {
   const { scene } = useGLTF(activeShirt); 
+
+  const BASE_HEIGHT = 162; 
+  const BASE_WEIGHT = 55;  
+  const bodyScaleY = height / BASE_HEIGHT;
+  const weightRatio = weight / BASE_WEIGHT;
+  const heightRatio = height / BASE_HEIGHT;
+  const bodyScaleXZ = Math.sqrt(weightRatio / heightRatio);
 
   const sizeScales = {
     "S": 1.0,
@@ -51,21 +58,27 @@ function ClothingItem({ activeShirt, shirtSize, fitType }) {
     "2XL": 1.20
   };
 
-  let newScale = sizeScales[shirtSize] || 1.0;
+  let fitScale = sizeScales[shirtSize] || 1.0;
+  if (fitType === 'OVERSIZED') fitScale += 0.05;
+  if (fitType === 'BOXY') fitScale += 0.02;
 
-  if (fitType === 'OVERSIZED') newScale += 0.05;
-  if (fitType === 'BOXY') newScale += 0.02;
+  // مسافة الأمان عشان العضلات متطلعش بره (Clearance)
+  const CLEARANCE = 1.08; 
 
-  // ارتفاع التيشيرت عشان يلبس في الصدر بالظبط
-  const SHIRT_HEIGHT_FIX = 0.8; 
-  
-  const yOffset = newScale > 1.0 ? -((newScale - 1.0) * 0.1) : 0;
+  const finalScaleX = bodyScaleXZ * fitScale * CLEARANCE;
+  const finalScaleY = bodyScaleY * fitScale; 
+  const finalScaleZ = bodyScaleXZ * fitScale * CLEARANCE;
 
+  // رفع التيشيرت على الصدر (متغير عشان يتظبط مع طول المانيكان)
+  const SHIRT_HEIGHT_FIX = 0.8 * bodyScaleY; 
+  const yOffset = fitScale > 1.0 ? -((fitScale - 1.0) * 0.1) : 0;
+
+  // زقينا التيشيرت لقدام سِنة (0.02) عشان يغطي الصدر
   return (
     <primitive 
       object={scene} 
-      position={[0, -1 + SHIRT_HEIGHT_FIX + yOffset, 0]} 
-      scale={[newScale, newScale, newScale]} 
+      position={[0, -1 + SHIRT_HEIGHT_FIX + yOffset, 0.02]} 
+      scale={[finalScaleX, finalScaleY, finalScaleZ]} 
     />
   );
 }
@@ -79,7 +92,14 @@ export default function Viewer({ height, weight, shirtSize, fitType, activeShirt
 
       <Suspense fallback={null}>
         <Avatar height={height} weight={weight} faceUrl={faceUrl} />
-        <ClothingItem activeShirt={activeShirt} shirtSize={shirtSize} fitType={fitType} />
+        
+        <ClothingItem 
+          activeShirt={activeShirt} 
+          shirtSize={shirtSize} 
+          fitType={fitType} 
+          height={height} 
+          weight={weight} 
+        />
       </Suspense>
 
       <ContactShadows position={[0, -1, 0]} opacity={0.6} scale={10} blur={2} far={4} color="#00FFFF" />
