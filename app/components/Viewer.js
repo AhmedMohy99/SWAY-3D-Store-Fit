@@ -57,7 +57,7 @@ function ClothingItem({ activeShirt, shirtSize, fitType }) {
   if (fitType === 'BOXY') newScale += 0.02;
 
   // ارتفاع التيشيرت عشان يلبس في الصدر بالظبط
-  const SHIRT_HEIGHT_FIX = 1.45; 
+  const SHIRT_HEIGHT_FIX = 0.8; 
   
   const yOffset = newScale > 1.0 ? -((newScale - 1.0) * 0.1) : 0;
 
