@@ -9,6 +9,7 @@ const Viewer = dynamic(() => import('./components/Viewer'), {
 
 export default function Home() {
   const [faceUrl, setFaceUrl] = useState(null);
+  const [bodySize, setBodySize] = useState('M'); // المقاس الافتراضي
   const fileInputRef = useRef(null);
 
   const handleFaceUpload = (e) => {
@@ -23,7 +24,8 @@ export default function Home() {
     <main className="relative w-screen h-screen bg-black overflow-hidden font-sans">
       
       <div className="absolute inset-0 z-0">
-        <Viewer faceUrl={faceUrl} />
+        {/* بنبعت المقاس للـ 3D هنا */}
+        <Viewer faceUrl={faceUrl} bodySize={bodySize} />
       </div>
 
       <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 sm:p-10">
@@ -33,6 +35,27 @@ export default function Home() {
         </header>
 
         <div className="pointer-events-auto flex flex-col gap-6 w-full max-w-[250px] bg-black/60 backdrop-blur-md p-6 border border-white/10">
+          
+          {/* اختيار المقاس */}
+          <div>
+            <p className="text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">Select Fit Size</p>
+            <div className="flex gap-2">
+              {['S', 'M', 'L', 'XL'].map((size) => (
+                <button 
+                  key={size}
+                  onClick={() => setBodySize(size)}
+                  className={`flex-1 h-10 text-xs border uppercase tracking-widest transition-all ${
+                    bodySize === size 
+                    ? 'bg-[#00FFFF] text-black border-[#00FFFF] font-bold' 
+                    : 'text-white border-white/30 hover:border-white'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <p className="text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">Face Mapping</p>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFaceUpload} className="hidden" />
@@ -41,12 +64,6 @@ export default function Home() {
               className="w-full h-12 border border-[#00FFFF] text-[#00FFFF] text-xs uppercase tracking-wider hover:bg-[#00FFFF] hover:text-black transition-all"
             >
               Upload Face
-            </button>
-          </div>
-          <div>
-            <p className="text-gray-400 text-[10px] tracking-widest uppercase mb-3">System Status</p>
-            <button className="w-full h-12 text-xs border bg-white/10 text-white border-white/20 uppercase tracking-widest cursor-default">
-              Avatar Base Ready
             </button>
           </div>
         </div>
