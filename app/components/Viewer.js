@@ -1,34 +1,54 @@
 'use client';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Environment, ContactShadows } from '@react-three/drei';
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useEffect } from 'react';
+import * as THREE from 'three';
 
-// 1. المانيكان الأساسي (بيتأثر بالطول والوزن)
-function Avatar({ height, weight }) {
+// 1. المانيكان (حجم الجسم + تركيب الوجه)
+function Avatar({ height, weight, faceUrl }) {
   const { scene } = useGLTF('/avatar.glb'); 
 
+  // حساب الأبعاد بناءً على الطول والوزن
   const currentScale = useMemo(() => {
-    const BASE_HEIGHT = 162; // خليناها 162 زي ما طلبت في اللوجيك
+    const BASE_HEIGHT = 162; 
     const BASE_WEIGHT = 55;  
-
     const scaleY = height / BASE_HEIGHT;
     const weightRatio = weight / BASE_WEIGHT;
     const heightRatio = height / BASE_HEIGHT;
     const scaleXZ = Math.sqrt(weightRatio / heightRatio);
-
     return [scaleXZ, scaleY, scaleXZ];
   }, [height, weight]);
+
+  // تركيب صورة الوجه على المانيكان
+  useEffect(() => {
+    if (faceUrl) {
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(faceUrl, (texture) => {
+        texture.flipY = false;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        
+        scene.traverse((child) => {
+          if (child.isMesh && (child.name.toLowerCase().includes('head') || child.name.toLowerCase().includes('face'))) {
+            child.material = new THREE.MeshStandardMaterial({
+              map: texture,
+              roughness: 0.5,
+            });
+            child.material.needsUpdate = true;
+          }
+        });
+      });
+    }
+  }, [faceUrl, scene]);
 
   return <primitive object={scene} position={[0, -1, 0]} scale={currentScale} />;
 }
 
-// 2. التيشيرت (بيتأثر بالمقاس المختار وبيترجم اللوجيك بتاعك)
-function ClothingItem({ shirtSize }) {
-  // لما يوصلك ملف التيشيرت، هتحط اسمه هنا بدل avatar
-  // مؤقتاً أنا موقف السطر ده عشان ميضربش إيرور لحد ما تجيب الملف
-  // const { scene } = useGLTF('/shirt.glb'); 
+// 2. التيشيرت (حسب الملف المختار، المقاس، ونوع التلبيس)
+function ClothingItem({ activeShirt, shirtSize, fitType }) {
+  // بنحمل الملف اللي العميل اختاره (حالياً المافيريك شغال)
+  // ملحوظة: لو اختار ملف مش موجود الموقع هيجيب إيرور 404 لحد ما ترفع باقي الملفات
+  const { scene } = useGLTF(activeShirt); 
 
-  // النسب اللي إنت كتبتها في اللوجيك
   const sizeScales = {
     "1 (S)": 1.0,
     "2 (M)": 1.05,
@@ -36,19 +56,18 @@ function ClothingItem({ shirtSize }) {
     "4 (XL)": 1.15
   };
 
-  const newScale = sizeScales[shirtSize] || 1.0;
-  
-  // اللوجيك بتاعك: النزول لتحت لو المقاس كبير عشان ميبقاش طاير
+  let newScale = sizeScales[shirtSize] || 1.0;
+
+  // تعديل إضافي للـ Scale بناءً على الـ Fit Type
+  if (fitType === 'Oversized') newScale += 0.05;
+  if (fitType === 'Boxy') newScale += 0.02; // البوكسي أعرض بس مش أطول، بس هنمشيها scale مؤقتاً
+
   const yOffset = newScale > 1.0 ? -((newScale - 1.0) * 0.1) : 0;
 
-  // لما يكون معاك الملف، هترجع السطر ده وتلغي الـ return null
-  // return <primitive object={scene} position={[0, -1 + yOffset, 0]} scale={[newScale, newScale, newScale]} />;
-  
-  return null; // مؤقتاً لحد ما ترفع ملف التيشيرت
+  return <primitive object={scene} position={[0, -1 + yOffset, 0]} scale={[newScale, newScale, newScale]} />;
 }
 
-// المشهد الرئيسي
-export default function Viewer({ height, weight, shirtSize }) {
+export default function Viewer({ height, weight, shirtSize, fitType, activeShirt, faceUrl }) {
   return (
     <Canvas camera={{ position: [0, 1, 3], fov: 45 }}>
       <Environment preset="city" />
@@ -56,10 +75,10 @@ export default function Viewer({ height, weight, shirtSize }) {
       <directionalLight position={[2, 5, 2]} intensity={1} castShadow />
 
       <Suspense fallback={null}>
-        <Avatar height={height} weight={weight} />
+        <Avatar height={height} weight={weight} faceUrl={faceUrl} />
         
-        {/* مررنا مقاس التيشيرت للقطعة */}
-        <ClothingItem shirtSize={shirtSize} />
+        {/* بنستدعي التيشيرت هنا */}
+        <ClothingItem activeShirt={activeShirt} shirtSize={shirtSize} fitType={fitType} />
       </Suspense>
 
       <ContactShadows position={[0, -1, 0]} opacity={0.6} scale={10} blur={2} far={4} color="#00FFFF" />
@@ -74,5 +93,6 @@ export default function Viewer({ height, weight, shirtSize }) {
   );
 }
 
+// التحميل المسبق للملفات اللي موجودة عندك فعلاً
 useGLTF.preload('/avatar.glb');
-// useGLTF.preload('/shirt.glb'); // هتشغل دي لما ترفع الملف
+useGLTF.preload('/maverick-phoenix-white.glb');
