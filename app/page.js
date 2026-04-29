@@ -8,7 +8,6 @@ const Viewer = dynamic(() => import('./components/Viewer'), {
 });
 
 export default function Home() {
-  // القيم الافتراضية لما الموقع يفتح
   const [height, setHeight] = useState(175); 
   const [weight, setWeight] = useState(70);  
 
@@ -16,6 +15,7 @@ export default function Home() {
     <main className="relative w-screen h-screen bg-black overflow-hidden font-sans">
       
       <div className="absolute inset-0 z-0">
+        {/* بنبعت الأرقام اللي العميل بيكتبها للمانيكان */}
         <Viewer height={height} weight={weight} />
       </div>
 
@@ -26,35 +26,32 @@ export default function Home() {
 
         <div className="pointer-events-auto flex flex-col gap-6 w-full max-w-[300px] bg-black/80 backdrop-blur-md p-6 border border-white/10">
           
-          {/* متحكم الطول */}
+          <div className="text-center mb-2">
+            <p className="text-white text-xs tracking-[0.2em] uppercase">Virtual Fitting</p>
+            <p className="text-gray-500 text-[9px] tracking-widest uppercase mt-1">Enter your exact metrics</p>
+          </div>
+
+          {/* مربع إدخال الطول */}
           <div>
-            <div className="flex justify-between text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">
-              <span>Height</span>
-              <span>{height} cm</span>
-            </div>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-2">Height (CM)</label>
             <input 
-              type="range" 
-              min="140" 
-              max="220" 
-              value={height} 
+              type="number" 
+              value={height}
               onChange={(e) => setHeight(Number(e.target.value))}
-              className="w-full h-1 bg-white/20 appearance-none outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#00FFFF]"
+              className="w-full h-12 bg-black/50 border border-white/20 focus:border-[#00FFFF] text-white text-center text-lg tracking-widest outline-none transition-all duration-300 placeholder:text-gray-700"
+              placeholder="175"
             />
           </div>
 
-          {/* متحكم الوزن */}
+          {/* مربع إدخال الوزن */}
           <div>
-            <div className="flex justify-between text-[#00FFFF] text-[10px] tracking-widest uppercase mb-3">
-              <span>Weight</span>
-              <span>{weight} kg</span>
-            </div>
+            <label className="block text-[#00FFFF] text-[10px] tracking-widest uppercase mb-2">Weight (KG)</label>
             <input 
-              type="range" 
-              min="40" 
-              max="150" 
-              value={weight} 
+              type="number" 
+              value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
-              className="w-full h-1 bg-white/20 appearance-none outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#00FFFF]"
+              className="w-full h-12 bg-black/50 border border-white/20 focus:border-[#00FFFF] text-white text-center text-lg tracking-widest outline-none transition-all duration-300 placeholder:text-gray-700"
+              placeholder="70"
             />
           </div>
 
