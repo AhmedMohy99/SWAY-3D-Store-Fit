@@ -50,6 +50,7 @@ function ClothingItem({ activeShirt, shirtSize, fitType, height, weight }) {
   const heightRatio = height / BASE_HEIGHT;
   const bodyScaleXZ = Math.sqrt(weightRatio / heightRatio);
 
+  // Size multipliers for different sizes
   const sizeScales = {
     "S": 1.0,
     "M": 1.05,
@@ -59,23 +60,33 @@ function ClothingItem({ activeShirt, shirtSize, fitType, height, weight }) {
   };
 
   let fitScale = sizeScales[shirtSize] || 1.0;
-  if (fitType === 'OVERSIZED') fitScale += 0.05;
-  if (fitType === 'BOXY') fitScale += 0.02;
+  
+  // Add extra scaling for different fit types
+  if (fitType === 'OVERSIZED') fitScale += 0.08;
+  if (fitType === 'BOXY') fitScale += 0.05;
 
-  // 🎯 الحل السحري: فصلنا البراح (Clearance) عشان التيشيرت ميخترقش الجسم
-  const finalScaleX = bodyScaleXZ * fitScale * 1.06; // عرض التيشيرت
-  const finalScaleY = bodyScaleY * fitScale * 1.02;  // طول التيشيرت عشان يغطي الكتف
-  const finalScaleZ = bodyScaleXZ * fitScale * 1.12; // عمق التيشيرت (ده اللي بيخفي عضلات الصدر والظهر)
+  // CRITICAL FIX: Enhanced clearance multipliers to prevent body clipping
+  // These values ensure the shirt mesh completely covers the body mesh
+  const CLEARANCE_X = 1.15;  // Width clearance (left-right)
+  const CLEARANCE_Z = 1.20;  // Depth clearance (front-back) - most important!
+  const CLEARANCE_Y = 1.03;  // Height clearance (up-down)
+  
+  // Calculate final scales with clearance
+  const finalScaleX = bodyScaleXZ * fitScale * CLEARANCE_X;
+  const finalScaleY = bodyScaleY * fitScale * CLEARANCE_Y;
+  const finalScaleZ = bodyScaleXZ * fitScale * CLEARANCE_Z;
 
-  // 🎯 رفعنا التيشيرت لمستوى الكتف (بدل 0.8 خليناها 0.95)
-  const SHIRT_HEIGHT_FIX = 0.95 * bodyScaleY; 
-  const yOffset = fitScale > 1.0 ? -((fitScale - 1.0) * 0.1) : 0;
+  // Vertical positioning to align with shoulders
+  // This positions the shirt collar at the correct shoulder height
+  const SHOULDER_ALIGNMENT = 0.92 * bodyScaleY;
+  
+  // Slight downward adjustment for larger sizes to maintain proper drape
+  const yOffset = fitScale > 1.0 ? -((fitScale - 1.0) * 0.08) : 0;
 
-  // 🎯 شيلنا زقة ה-Z اللي كانت بتفضح الظهر، ورجعناه في النص بالظبط (0)
   return (
     <primitive 
       object={scene} 
-      position={[0, -1 + SHIRT_HEIGHT_FIX + yOffset, 0]} 
+      position={[0, -1 + SHOULDER_ALIGNMENT + yOffset, 0]} 
       scale={[finalScaleX, finalScaleY, finalScaleZ]} 
     />
   );
