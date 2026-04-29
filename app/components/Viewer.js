@@ -62,22 +62,20 @@ function ClothingItem({ activeShirt, shirtSize, fitType, height, weight }) {
   if (fitType === 'OVERSIZED') fitScale += 0.05;
   if (fitType === 'BOXY') fitScale += 0.02;
 
-  // مسافة الأمان عشان العضلات متطلعش بره (Clearance)
-  const CLEARANCE = 1.08; 
+  // 🎯 الحل السحري: فصلنا البراح (Clearance) عشان التيشيرت ميخترقش الجسم
+  const finalScaleX = bodyScaleXZ * fitScale * 1.06; // عرض التيشيرت
+  const finalScaleY = bodyScaleY * fitScale * 1.02;  // طول التيشيرت عشان يغطي الكتف
+  const finalScaleZ = bodyScaleXZ * fitScale * 1.12; // عمق التيشيرت (ده اللي بيخفي عضلات الصدر والظهر)
 
-  const finalScaleX = bodyScaleXZ * fitScale * CLEARANCE;
-  const finalScaleY = bodyScaleY * fitScale; 
-  const finalScaleZ = bodyScaleXZ * fitScale * CLEARANCE;
-
-  // رفع التيشيرت على الصدر (متغير عشان يتظبط مع طول المانيكان)
-  const SHIRT_HEIGHT_FIX = 0.8 * bodyScaleY; 
+  // 🎯 رفعنا التيشيرت لمستوى الكتف (بدل 0.8 خليناها 0.95)
+  const SHIRT_HEIGHT_FIX = 0.95 * bodyScaleY; 
   const yOffset = fitScale > 1.0 ? -((fitScale - 1.0) * 0.1) : 0;
 
-  // زقينا التيشيرت لقدام سِنة (0.02) عشان يغطي الصدر
+  // 🎯 شيلنا زقة ה-Z اللي كانت بتفضح الظهر، ورجعناه في النص بالظبط (0)
   return (
     <primitive 
       object={scene} 
-      position={[0, -1 + SHIRT_HEIGHT_FIX + yOffset, 0.02]} 
+      position={[0, -1 + SHIRT_HEIGHT_FIX + yOffset, 0]} 
       scale={[finalScaleX, finalScaleY, finalScaleZ]} 
     />
   );
