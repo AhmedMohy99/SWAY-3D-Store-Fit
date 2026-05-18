@@ -5,18 +5,15 @@ import { Suspense, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 
 // =========================================================================
-// 🛠️ CONFIGURATION CONSTANTS (Adjust these when you change your avatar model)
+// 🛠️ الإعدادات الأساسية للأفاتار
 // =========================================================================
-const BASE_HEIGHT = 162;       // Base height of your avatar model in cm
-const BASE_WEIGHT = 55;        // Base weight of your avatar model in kg
-const SHOULDER_HEIGHT = 1.35;  // Distance from floor to shoulders in your GLB (in 3D units)
+const BASE_HEIGHT = 162;       // الطول الافتراضي للأفاتار بالسنتيمتر
+const BASE_WEIGHT = 55;        // الوزن الافتراضي للأفاتار بالكيلوجم
+const CHEST_HEIGHT_FROM_PIVOT = 0.42; // ارتفاع الصدر عن نقطة المنتصف (عدلها لو التيشيرت محتاج ترحيل فوق أو تحت)
 // =========================================================================
 
 function Avatar({ height, weight, faceUrl }) {
   const { scene } = useGLTF('/avatar.glb'); 
-  
-  // Clean clone ensures mutations (like face textures) don't bleed across re-renders
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
 
   const currentScale = useMemo(() => {
     const scaleY = height / BASE_HEIGHT;
@@ -33,9 +30,7 @@ function Avatar({ height, weight, faceUrl }) {
         texture.flipY = false;
         texture.colorSpace = THREE.SRGBColorSpace;
         
-        clonedScene.traverse((child) => {
-          // ⚠️ ATTENTION: When you change your avatar model, make sure 
-          // one of these keywords matches your new model's head mesh name.
+        scene.traverse((child) => {
           if (child.isMesh && (
             child.name.toLowerCase().includes('head') || 
             child.name.toLowerCase().includes('face') ||
@@ -50,53 +45,50 @@ function Avatar({ height, weight, faceUrl }) {
         });
       });
     }
-  }, [faceUrl, clonedScene]);
+  }, [faceUrl, scene]);
 
-  return <primitive object={clonedScene} position={[0, -1, 0]} scale={currentScale} />;
+  // الأفاتار يبدأ من الأرض [0, -1, 0]
+  return <primitive object={scene} position={[0, -1, 0]} scale={currentScale} />;
 }
 
 function ClothingItem({ activeShirt, shirtSize, fitType, height, weight }) {
   const { scene } = useGLTF(activeShirt); 
-  
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
 
   const bodyScaleY = height / BASE_HEIGHT;
   const weightRatio = weight / BASE_WEIGHT;
   const heightRatio = height / BASE_HEIGHT;
   const bodyScaleXZ = Math.sqrt(weightRatio / heightRatio);
 
-  // Balanced scaling increments to prevent exponential ballooning
+  // نسب تكبير المقاسات لحجم التيشيرت
   const sizeScales = {
-    "S": 0.94,
+    "S": 0.95,
     "M": 1.00,
-    "L": 1.06,
-    "XL": 1.12,
-    "2XL": 1.18
+    "L": 1.05,
+    "XL": 1.10,
+    "2XL": 1.15
   };
 
   let fitScale = sizeScales[shirtSize] || 1.0;
   
-  if (fitType === 'OVERSIZED') fitScale *= 1.08;
-  if (fitType === 'BOXY') fitScale *= 1.04;
+  if (fitType === 'OVERSIZED') fitScale *= 1.06;
+  if (fitType === 'BOXY') fitScale *= 1.03;
 
-  // Global clearances to avoid mesh clipping without turning the shirt into a box
-  const CLEARANCE_X = 1.05;  
-  const CLEARANCE_Z = 1.08;  
-  const CLEARANCE_Y = 1.01;  
+  // فوارق بسيطة جداً لمنع تداخل الأسطح (Clipping)
+  const CLEARANCE_X = 1.02;  
+  const CLEARANCE_Z = 1.03;  
+  const CLEARANCE_Y = 1.00;  
   
   const finalScaleX = bodyScaleXZ * fitScale * CLEARANCE_X;
   const finalScaleY = bodyScaleY * fitScale * CLEARANCE_Y;
   const finalScaleZ = bodyScaleXZ * fitScale * CLEARANCE_Z;
 
-  // 🔥 FIXED POSITIONING MATH:
-  // Calculates the delta movement caused by scaling from a floor pivot point.
-  // It pulls the shirt down perfectly to lock its collar to the avatar's neck line.
-  const yPositionOffset = SHOULDER_HEIGHT * (bodyScaleY - finalScaleY);
+  // 🔥 الحسبة الجديدة: التيشيرت بيتحرك مباشرة لمستوى الصدر بناءً على طول الجسم
+  const yPosition = -1 + (CHEST_HEIGHT_FROM_PIVOT * bodyScaleY);
 
   return (
     <primitive 
-      object={clonedScene} 
-      position={[0, -1 + yPositionOffset, 0]} 
+      object={scene} 
+      position={[0, yPosition, 0]} 
       scale={[finalScaleX, finalScaleY, finalScaleZ]} 
     />
   );
@@ -114,6 +106,7 @@ export default function Viewer({ height, weight, shirtSize, fitType, activeShirt
         
         {activeShirt && (
           <ClothingItem 
+            key={activeShirt} // الـ key هنا بيجبر ريأكت يجدد التيشيرت بشكل نظيف عند التغيير بدل الـ clone
             activeShirt={activeShirt} 
             shirtSize={shirtSize} 
             fitType={fitType} 
@@ -123,7 +116,7 @@ export default function Viewer({ height, weight, shirtSize, fitType, activeShirt
         )}
       </Suspense>
 
-      <ContactShadows position={[0, -1, 0]} opacity={0.5} scale={8} blur={1.5} far={3} color="#00FFFF" />
+          <ContactShadows position={[0, -1, 0]} opacity={0.5} scale={8} blur={1.5} far={3} color="#00FFFF" />
       
       <OrbitControls 
         enablePan={false} 
@@ -135,5 +128,4 @@ export default function Viewer({ height, weight, shirtSize, fitType, activeShirt
   );
 }
 
-// Preload baseline assets for speed
 useGLTF.preload('/avatar.glb');
